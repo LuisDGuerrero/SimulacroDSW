@@ -21,10 +21,20 @@ def home():
 
 @public_bp.route("/actividades")
 def mostrar_actividades():
-
-    actividades = Actividad.query.all()
-
     deporte_fav = None
+
+    busqueda = request.args.get("search", "").strip()
+    solo_con_plaza = request.args.get("solo_con_plazas")
+    deporte_fav = request.cookies.get("deporte_fav")
+
+    coincidencias = Actividad.query
+
+    if busqueda:
+        coincidencias = coincidencias.filter(Actividad.nombre.ilike(f"%{busqueda}%"))
+    if solo_con_plaza:
+        coincidencias = coincidencias.filter(Actividad.plazas_libres > 0)
+
+    actividades = coincidencias.all()
 
     return render_template(
         "catalogo.html",
@@ -41,12 +51,22 @@ def ver_actividad(act_id):
 
 @public_bp.route("/preferencia/<string:deporte>")
 def guardar_preferencia(deporte):
-    return redirect(url_for("public.mostrar_actividades"))
+    respuesta = make_response(redirect(url_for("public.mostrar_actividades")))
+    respuesta.set_cookie(
+        "deporte_fav",
+        value=deporte,
+        max_age=60 * 60 * 24 * 15,
+        httponly=True,
+        samesite="Lax",
+    )
+    return respuesta
 
 
 @public_bp.route("/limpiar-preferencia")
 def limpiar_preferencia():
-    return redirect(url_for("public.mostrar_actividades"))
+    respuesta = make_response(redirect(url_for("public.mostrar_actividades")))
+    respuesta.delete_cookie("deporte_fav")
+    return respuesta
 
 
 @public_bp.route("/reservas/apuntar/<int:act_id>", methods=["POST"])

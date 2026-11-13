@@ -19,6 +19,10 @@ def create_app(config_class=Config):
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
 
+    @app.errorhandler(404)
+    def recurso_inexistente(e):
+        return render_template("404.html"), 404
+
     # Manejador de error 403 (Acceso Prohibido)
     @app.errorhandler(403)
     def acceso_prohibido(e):
