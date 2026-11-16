@@ -38,7 +38,7 @@ def registro():
     if form.validate_on_submit():
         # 1. Instanciamos el Usuario con sus datos, su edad y el rol "socio"
         nuevo_usuario = Usuario(
-            nombre=form.username.data,
+            username=form.username.data,
             email=form.email.data,
             edad=form.edad.data,
             rol="socio",
