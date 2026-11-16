@@ -35,6 +35,22 @@ def registro():
         return redirect(url_for("public.mostrar_actividades"))
 
     form = RegistroForm()
+    if form.validate_on_submit():
+        # 1. Instanciamos el Usuario con sus datos, su edad y el rol "socio"
+        nuevo_usuario = Usuario(
+            nombre=form.nombre.data,
+            email=form.email.data,
+            edad=form.edad.data,
+            rol="socio",
+        )
+        # 2. Ciframos la contraseña usando el método set_password() del modelo
+        nuevo_usuario.set_password(form.password.data)
+
+        # 3. Guardamos en la base de datos y redirigimos al login
+        db.session.add(nuevo_usuario)
+        db.session.commit()
+        flash("Registro completado con éxito. Ya puedes iniciar sesión.", "exito")
+        return redirect(url_for("auth.login"))
 
     return render_template("registro.html", form=form)
 
@@ -43,7 +59,19 @@ def registro():
 @login_required
 def perfil():
     form = CambiarPasswordForm()
-
+    if form.validate_on_submit():
+        # 1. Comprobamos que la contraseña actual sea válida
+        if not current_user.check_password(form.password_actual.data):
+            flash("La contraseña actual es incorrecta.", "error")
+        # 2. Comprobamos que la nueva sea diferente a la actual
+        elif form.password_actual.data == form.nueva_password.data:
+            flash("La nueva contraseña debe ser diferente a la actual.", "error")
+        else:
+            # 3. Actualizamos el hash y guardamos en BD
+            current_user.set_password(form.nueva_password.data)
+            db.session.commit()
+            flash("Contraseña actualizada correctamente.", "exito")
+            return redirect(url_for("auth.perfil"))
     return render_template("perfil.html", form=form)
 
 
@@ -51,6 +79,8 @@ def perfil():
 @login_required
 def logout():
     logout_user()
-
+    session.pop(
+        "reservas", None
+    )  # Elimina las reservas pendientes sin lanzar KeyError si no existen
     flash("Has cerrado sesión correctamente.", "info")
     return redirect(url_for("public.mostrar_actividades"))

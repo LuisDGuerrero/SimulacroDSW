@@ -110,6 +110,13 @@ class RegistroForm(FlaskForm):
             Email(message="Introduce un correo válido."),
         ],
     )
+    edad = IntegerField(
+        "Edad",
+        validators=[
+            DataRequired(message="La edad es obligatoria"),
+            NumberRange(min=16, message="El usuario debe ser tener 16 años o mas."),
+        ],
+    )
 
     password = PasswordField(
         "Contraseña",
@@ -139,4 +146,22 @@ class RegistroForm(FlaskForm):
 class CambiarPasswordForm(FlaskForm):
     """Formulario para cambiar la contraseña desde el perfil del socio."""
 
+    password_actual = PasswordField(
+        "Contraseña actual",
+        validators=[DataRequired(message="Introduce tu contraseña actual")],
+    )
+    nueva_password = PasswordField(
+        "Nueva contraseña",
+        validators=[
+            DataRequired(message="Introduce la nueva contraseña"),
+            Length(min=6, message="La contraseña debe tener al menos 6 caracteres"),
+        ],
+    )
+    confirmar_password = PasswordField(
+        "Confirmar nueva contraseña",
+        validators=[
+            DataRequired(message="Confirma la nueva contraseña"),
+            EqualTo("nueva_password", message="Las contraseñas no coinciden"),
+        ],
+    )
     submit = SubmitField("Actualizar Contraseña")
