@@ -45,7 +45,7 @@ def crear_actividad():
             deporte=form.deporte.data,
             cuota=form.cuota.data,
             plazas_libres=form.plazas_libres.data,
-            imagen=nombre_imagen,  # Guardamos solo el nombre del fichero en la BD
+            imagen=nombre_imagen,
         )
         db.session.add(nueva_actividad)
         db.session.commit()
